@@ -38,14 +38,27 @@ export default async function middleware(req : NextRequest) : Promise<NextRespon
       }
     }
 
+    const lettersToCheck = WORD.split("")
+    const match = word.split("").map((letter) => (
+      {
+        letter: letter,
+        score: "bad"
+      }
+    ))
+    word.split("").forEach((letter, i) => {
+      if (WORD[i] === letter) {
+        match[i].score = "good"
+        lettersToCheck.splice(i, 1)
+      }
+    })
+    word.split("").forEach((letter, i) => {
+      if (lettersToCheck.includes(letter) && match[i].score !== "good") {
+        match[i].score = "off"
+      }
+    })
+
     return NextResponse.json({
-      match: word.split("").map((letter, i) => {
-        return {
-          letter: letter,
-          score:
-            letter === WORD[i] ? "good" : WORD.includes(letter) ? "off" : "bad",
-        };
-      }),
+      match
     });
   } else {
     return null;
