@@ -68,7 +68,7 @@ type ClipboardContent = {
 };
 
 async function copyToClipboard(obj : ClipboardContent) : Promise<boolean> {
-  if (navigator.clipboard) {
+  if (navigator.clipboard && 'undefined' !== typeof ClipboardItem) {
     const item = new ClipboardItem({
       ['text/plain']: new Blob([obj['text/plain']], { type: 'text/plain' }),
       ['text/html']: new Blob([obj['text/html']], { type: 'text/html' }),
