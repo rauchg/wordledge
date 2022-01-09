@@ -5,10 +5,15 @@ import toast, { Toaster } from "react-hot-toast";
 import useWindowSize from "react-use/lib/useWindowSize";
 import Confetti from "react-confetti";
 import copy from "copy-text-to-clipboard";
+import type { GameState, GameStateRow, GameStateRowItem, GameStateRows, ServerResponse } from "../types";
 
 const { GAME_ID, BOARD_SIZE, WORD_LENGTH } = settings;
 
-async function check(word: string, opts: any) {
+type CheckOptions = {
+  signal?: AbortSignal
+};
+
+async function check(word: string, opts: CheckOptions) {
   const res = await fetch(`/check?word=${encodeURIComponent(word)}`, opts);
   return await res.json();
 }
@@ -31,7 +36,7 @@ function readGameStateFromStorage() {
   return state;
 }
 
-function saveGameStateToStorage(state: any) {
+function saveGameStateToStorage(state: GameStateRows) {
   try {
     localStorage.setItem(
       "gameState",
@@ -45,16 +50,39 @@ function saveGameStateToStorage(state: any) {
   }
 }
 
-function getIsGameOver (gameState: any) {
+function getIsGameOver (gameState: GameState) {
   return gameState && (gameState.state.length === 6 || getIsVictory(gameState));
 }
 
-function getIsVictory (gameState: any) {
+function getIsVictory (gameState: GameState) {
   return gameState
   && gameState.state.length
   && !gameState.state[gameState.state.length - 1].some(
-    (i: any) => i.score !== "good"
+    (i : GameStateRowItem) => i.score !== "good"
   );
+}
+
+type ClipboardContent = {
+  'text/plain': string,
+  'text/html': string,
+};
+
+async function copyToClipboard(obj : ClipboardContent) : Promise<boolean> {
+  if (navigator.clipboard) {
+    const item = new ClipboardItem({
+      ['text/plain']: new Blob([obj['text/plain']], { type: 'text/plain' }),
+      ['text/html']: new Blob([obj['text/html']], { type: 'text/html' }),
+    });
+    try {
+      await navigator.clipboard.write([item]);
+    } catch (err) {
+      console.error("clipboard write error", err);
+      return false;
+    }
+    return true;
+  } else {
+    return copy(obj['text/plain']);
+  }
 }
 
 export default function Home() {
@@ -106,7 +134,7 @@ export default function Home() {
 
   function onClick(ev: MouseEvent) {
     ev.preventDefault();
-    setGameState(gameState => {
+    setGameState((gameState: GameState) => {
       if (gameState) {
         if (!getIsGameOver(gameState)) {
           if (hiddenInputRef.current && hiddenInputRef.current != document.activeElement) {
@@ -126,15 +154,15 @@ export default function Home() {
     setIsFocused(false);
   }
 
-  function getShareText(gameState: any) {
-    return `Wordledge #${GAME_ID} ${
+  function getShareText(gameState: GameState, html = false) {
+    const text = `${(html ? '<a href="https://wordledge.vercel.app">Wordledge</a>' : 'Wordledge.vercel.app')} #${GAME_ID} ${
       getIsVictory(gameState) ? gameState.state.length : "X"
     }/${BOARD_SIZE}
 
 ${gameState.state
-  .map((line: any) => {
+  .map((line: GameStateRow) => {
     return line
-      .map((item: any) => {
+      .map((item) => {
         return item.score === "good"
           ? "🟩"
           : item.score === "off"
@@ -144,24 +172,34 @@ ${gameState.state
       .join("");
   })
   .join("\n")}`;
+    if (html) {
+      return text.replace(/\n/g, "<br>");
+    } else {
+      return text;
+    }
   }
 
   function onCopyToClipboard(e: MouseEvent) {
     e.stopPropagation();
     e.preventDefault();
-    setGameState((gameState: any) => {
+    setGameState((gameState: GameState) => {
       if (gameState) {
-        if (copy(getShareText(gameState))) {
-          toast.success("Copied!", { id: "clipboard" });
-        } else {
-          toast.error("Clipboard error", { id: "clipboard" });
-        }
+        copyToClipboard({
+          'text/plain': getShareText(gameState),
+          'text/html': getShareText(gameState, true)
+        }).then((ok) => {
+          if (ok) {
+            toast.success("Copied!", { id: "clipboard" });
+          } else {
+            toast.error("Clipboard error", { id: "clipboard" });
+          }
+        });
       }
       return gameState;
     });
   }
 
-  async function submit(text: any) {
+  async function submit(text: string) {
     if (fetchControllerRef.current) fetchControllerRef.current.abort();
     const controller = new AbortController();
     fetchControllerRef.current = controller;
@@ -169,9 +207,9 @@ ${gameState.state
     setIsLoading(true);
     toast.loading("Checking…", { id: "toast", duration: Infinity });
 
-    let error, match;
+    let serverResponse : ServerResponse;
     try {
-      ({ error, match } = await check(text, { signal: controller.signal }));
+      serverResponse = await check(text, { signal: controller.signal });
     } catch (err) {
       if (err.name === "AbortError") {
         toast.dismiss("toast");
@@ -184,6 +222,8 @@ ${gameState.state
       fetchControllerRef.current = null;
     }
 
+    let { error, match } = serverResponse;
+
     if (error) {
       if (error === "unknown_word") {
         toast.error("Invalid English word", { id: "toast", duration: 1000 });
@@ -193,10 +233,10 @@ ${gameState.state
     } else {
       toast.dismiss("toast");
       setInputText("");
-      if (!match.some((i) => i.score !== "good")) {
+      if (!match.some((i: GameStateRowItem) => i.score !== "good")) {
         setShowConfetti(true);
       }
-      setGameState((state) => {
+      setGameState((state: GameState) => {
         return {
           state: state.state.concat([match]),
           initial: false,
@@ -206,7 +246,7 @@ ${gameState.state
   }
 
   useEffect(() => {
-    function handleKeyDown(ev: any) {
+    function handleKeyDown(ev: KeyboardEvent) {
       if (fetchControllerRef.current || isGameOver) return;
       if (ev.key === "Enter") {
         setInputText((text) => {
@@ -215,7 +255,7 @@ ${gameState.state
           }
           return text;
         });
-      } else if (ev.keyCode > 64 && ev.keyCode < 91) {
+      } else if (/^[a-z]$/.test(ev.key)) {
         if (ev.metaKey || ev.altKey || ev.ctrlKey) return;
         // in non-ios keyboard input is possible without input focus
         // so we force it to be focused
@@ -257,9 +297,9 @@ ${gameState.state
         `}
       >
         {gameState &&
-          gameState.state.map((match: any, i: Number) => (
+          gameState.state.map((match: GameStateRow, i: Number) => (
             <div key={`gs_row${i}`} className="row">
-              {match.map((item: any, i: Number) => {
+              {match.map((item : GameStateRowItem, i: Number) => {
                 return (
                   <div key={`letter-${i}`} className={`letter ${item.score}`}>
                     {item.letter}

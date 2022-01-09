@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 const WORD = process.env.WORD || "rauch";
 
-export default async function middleware(req) {
+// e.g.: https://api.dictionaryapi.dev/api/v2/entries/en/test
+type DictionaryApiWord = {
+  word: string;
+}
+
+export default async function middleware(req : NextRequest) : Promise<NextResponse> {
   if (req.nextUrl.pathname === "/check") {
     const word = req.nextUrl.searchParams
       .get("word")
@@ -12,7 +18,7 @@ export default async function middleware(req) {
     // if the word doesn't match, assert it's a
     // dictionary word
     if (word !== WORD) {
-      let matchingWords;
+      let matchingWords : Array<DictionaryApiWord>;
       try {
         const wordsRes = await fetch(
           `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(
