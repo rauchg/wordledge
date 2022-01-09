@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef, MouseEvent } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import settings from "../settings.json";
 import toast, { Toaster } from "react-hot-toast";
 import useWindowSize from "react-use/lib/useWindowSize";
 import Confetti from "react-confetti";
 import copy from "copy-text-to-clipboard";
+import type { MouseEvent, FormEvent } from "react";
 import type { GameState, GameStateRow, GameStateRowItem, GameStateRows, ServerResponse } from "../types";
 
 const { GAME_ID, BOARD_SIZE, WORD_LENGTH } = settings;
@@ -232,7 +233,10 @@ ${gameState.state
       }
     } else {
       toast.dismiss("toast");
+
+      hiddenInputRef.current.value = '';
       setInputText("");
+
       if (!match.some((i: GameStateRowItem) => i.score !== "good")) {
         setShowConfetti(true);
       }
@@ -248,29 +252,8 @@ ${gameState.state
   useEffect(() => {
     function handleKeyDown(ev: KeyboardEvent) {
       if (fetchControllerRef.current || isGameOver) return;
-      if (ev.key === "Enter") {
-        setInputText((text) => {
-          if (!fetchControllerRef.current && text.length === 5) {
-            submit(text);
-          }
-          return text;
-        });
-      } else if (/^[a-z]$/i.test(ev.key)) {
-        if (ev.metaKey || ev.altKey || ev.ctrlKey) return;
-        // in non-ios keyboard input is possible without input focus
-        // so we force it to be focused
-        setIsFocused(true);
-        setInputText((text) =>
-          (text + ev.key.toLowerCase()).slice(0, WORD_LENGTH)
-        );
-      } else if (ev.key === "Backspace") {
-        // in non-ios keyboard input is possible without input focus
-        // so we force it to be focused
-        setIsFocused(true);
-        setInputText((text) =>
-          ev.metaKey ? "" : text.slice(0, text.length - 1)
-        );
-      }
+      if (ev.metaKey || ev.altKey || ev.ctrlKey) return;
+      hiddenInputRef.current.focus();
     }
 
     document.addEventListener("keydown", handleKeyDown);
@@ -279,18 +262,52 @@ ${gameState.state
     };
   }, [isGameOver]);
 
+  function onInput (ev: FormEvent) {
+    const nativeEvent = ev.nativeEvent as any;
+    setGameState((gameState: GameState) => {
+      if (gameState && !getIsGameOver(gameState)) {
+        const val = nativeEvent.target.value
+          .toLowerCase()
+          .replace(/[^a-z]+/g, '')
+          .slice(0, WORD_LENGTH);
+        setInputText(() => {
+          nativeEvent.target.value = val;
+          return val;
+        });
+      }
+    });
+  }
+
+  function onSubmit (ev: FormEvent) {
+    ev.preventDefault();
+    setInputText((text) => {
+      setGameState((gameState: GameState) => {
+        if (gameState && !getIsGameOver(gameState)) {
+          if (!fetchControllerRef.current && text.length === 5) {
+            submit(text);
+          }
+        }
+        return gameState;
+      });
+      return text;
+    });
+  }
+
   return (
     <main className={`${!gameState ? "initializing" : ""}`} onClick={onClick}>
-      <input
-        className="hidden-input"
-        onFocus={onInputFocus}
-        onBlur={onInputBlur}
-        ref={hiddenInputRef}
-        autoComplete="off"
-        autoCapitalize="none"
-        spellCheck="false"
-        enterKeyHint="go"
-      />
+      <form onSubmit={onSubmit}>
+        <input
+          className="hidden-input"
+          onFocus={onInputFocus}
+          onBlur={onInputBlur}
+          ref={hiddenInputRef}
+          autoComplete="off"
+          autoCapitalize="none"
+          spellCheck="false"
+          enterKeyHint="go"
+          onInput={onInput}
+        />
+      </form>
 
       <div
         className={`board
