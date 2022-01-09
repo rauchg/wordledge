@@ -66,8 +66,6 @@ export default function Home() {
   const hiddenInputRef = useRef(null);
   const [gameState, setGameState] = useState(null);
   const { width, height } = useWindowSize();
-
-  const isVictory = getIsVictory(gameState);
   const isGameOver = getIsGameOver(gameState);
 
   useEffect(() => {
