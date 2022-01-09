@@ -27,5 +27,5 @@ _Note: Soon, for ergonomic reasons, Next.js will help you run `api/check` as an 
 ## Credits & License
 
 - Credits to Josh Wardle for [Wordle](https://www.powerlanguage.co.uk/wordle/)
-- Credits to @octokatherine of [Word Master](https://github.com/octokatherine/word-master) for bugfixes
+- Credits to [Katherine Peterson](https://github.com/octokatherine) of [Word Master](https://github.com/octokatherine/word-master) for bugfixes
 - Licensed under MIT
