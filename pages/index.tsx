@@ -366,7 +366,7 @@ ${gameState.state
       </div>
 
       <div className="footer" onClick={(e) => e.stopPropagation()}>
-        Deployed on <a href="https://vercel.com" target="_blank" rel="noreferrer">Vercel</a> <span>|</span>{" "}
+        Deployed on <a href="https://vercel.com" target="_blank" rel="noreferrer">Vercel</a> (<a href="https://github.com/rauchg/wordledge" rel="noreferrer" target="_blank">source</a>) <span>|</span>{" "}
         Inspired by <a href="https://www.powerlanguage.co.uk/wordle/" rel="noreferrer" target="_blank">Wordle</a>
       </div>
 

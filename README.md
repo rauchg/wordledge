@@ -3,7 +3,9 @@
 An implementation of [Wordle](https://www.powerlanguage.co.uk/wordle/) to help
 you learn Next.js and Vercel.
 
-![Wordledge](public/card.png)
+[![Wordledge](public/card.png)](https://wordledge.vercel.app)
+
+Demo: [https://wordledge.vercel.app](https://wordledge.vercel.app)
 
 ### Development
 
