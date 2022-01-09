@@ -54,6 +54,7 @@ export default async function middleware(req : NextRequest) : Promise<NextRespon
     word.split("").forEach((letter, i) => {
       if (lettersToCheck.includes(letter) && match[i].score !== "good") {
         match[i].score = "off"
+        lettersToCheck.splice(lettersToCheck.indexOf(letter), 1)
       }
     })
 
