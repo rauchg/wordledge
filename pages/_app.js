@@ -13,8 +13,12 @@ function MyApp({ Component, pageProps }) {
           content="Worldedge: Wordle on Next.js at the Edge"
         />
         <meta
-          name="twitter:description"
+          property="og:description"
           content="A spinoff of the popular Wordle game written in Next.js"
+        />
+        <meta
+          property="og:image"
+          content="https://wordledge.vercel.app/card.png"
         />
         <meta
           name="twitter:image"
