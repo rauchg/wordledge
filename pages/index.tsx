@@ -255,7 +255,7 @@ ${gameState.state
           }
           return text;
         });
-      } else if (/^[a-z]$/.test(ev.key)) {
+      } else if (/^[a-z]$/i.test(ev.key)) {
         if (ev.metaKey || ev.altKey || ev.ctrlKey) return;
         // in non-ios keyboard input is possible without input focus
         // so we force it to be focused
@@ -287,6 +287,7 @@ ${gameState.state
         onBlur={onInputBlur}
         ref={hiddenInputRef}
         autoComplete="off"
+        autoCapitalize="none"
         spellCheck="false"
         enterKeyHint="go"
       />
