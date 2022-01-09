@@ -10,7 +10,7 @@ function MyApp({ Component, pageProps }) {
         <meta name="twitter:site" content="@rauchg" />
         <meta
           name="twitter:title"
-          content="Worldedge: Wordle on Next.js at the Edge"
+          content="Wordledge: Wordle on Next.js at the Edge"
         />
         <meta
           property="og:description"
