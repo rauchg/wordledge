@@ -19,7 +19,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ### Edge
 
-In [`pages/middleware.ts`](tree/main/pages/middleware.ts) we implement the `/check` endpoint which gets deployed to all Vercel
+In [`pages/middleware.ts`](pages/_middleware.ts) we implement the `/check` endpoint which gets deployed to all Vercel
 regions automatically and has no cold boots. Any time you submit, we make a query against `/check`.
 
 Users get automatically routed to the nearest region. Read more about [Edge Functions](https://vercel.com/edge).
