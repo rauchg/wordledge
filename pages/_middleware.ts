@@ -39,19 +39,20 @@ export default async function middleware(req : NextRequest) : Promise<NextRespon
     }
 
     const lettersToCheck = WORD.split("")
-    const match = word.split("").map((letter) => (
+    const letters = word.split("")
+    const match = letters.map((letter) => (
       {
         letter: letter,
         score: "bad"
       }
     ))
-    for (let i = word.split("").length - 1; i >= 0; i--) {
-      if (WORD[i] === word.split("")[i]) {
+    for (let i = letters.length - 1; i >= 0; i--) {
+      if (WORD[i] === letters[i]) {
         match[i].score = "good"
         lettersToCheck.splice(i, 1)
       }
     }
-    word.split("").forEach((letter, i) => {
+    letters.forEach((letter, i) => {
       if (lettersToCheck.includes(letter) && match[i].score !== "good") {
         match[i].score = "off"
         lettersToCheck.splice(lettersToCheck.indexOf(letter), 1)
