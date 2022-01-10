@@ -295,7 +295,7 @@ ${gameState.state
 
   return (
     <main className={`${!gameState ? "initializing" : ""}`} onClick={onClick}>
-      <form onSubmit={onSubmit}>
+      <form autoComplete="off" onSubmit={onSubmit}>
         <input
           className="hidden-input"
           onFocus={onInputFocus}
@@ -303,6 +303,7 @@ ${gameState.state
           ref={hiddenInputRef}
           autoComplete="off"
           autoCapitalize="none"
+          autoCorrect="off"
           spellCheck="false"
           enterKeyHint="go"
           onInput={onInput}
