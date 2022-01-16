@@ -1,14 +1,19 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+const DICTIONARY_API_KEY = process.env.DICTIONARY_API_KEY;
 const WORD = process.env.WORD || "rauch";
 
-// e.g.: https://api.dictionaryapi.dev/api/v2/entries/en/test
+// e.g.: https://www.dictionaryapi.com/api/v3/references/collegiate/json/test?key={DICTIONARY_API_KEY}
 type DictionaryApiWord = {
-  word: string;
+  def: Array<Object>;
 }
 
 export default async function middleware(req : NextRequest) : Promise<NextResponse> {
+  if (!DICTIONARY_API_KEY) {
+    throw new Error("DICTIONARY_API_KEY is not set");
+  }
+
   if (req.nextUrl.pathname === "/check") {
     const word = req.nextUrl.searchParams
       .get("word")
@@ -21,9 +26,9 @@ export default async function middleware(req : NextRequest) : Promise<NextRespon
       let matchingWords : Array<DictionaryApiWord>;
       try {
         const wordsRes = await fetch(
-          `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(
+          `https://www.dictionaryapi.com/api/v3/references/collegiate/json/${encodeURIComponent(
             word
-          )}`
+          )}?key=${encodeURIComponent(DICTIONARY_API_KEY)}`
         );
         matchingWords = await wordsRes.json();
       } catch (err) {
