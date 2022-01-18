@@ -1,4 +1,4 @@
-## Worldledge
+## Wordledge
 
 An implementation of [Wordle](https://www.powerlanguage.co.uk/wordle/) to help
 you learn Next.js and Vercel.
